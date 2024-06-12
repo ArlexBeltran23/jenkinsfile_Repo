@@ -1,0 +1,48 @@
+pipeline {
+    agent any
+
+    environment {
+        DOCKER_IMAGE = "index"
+        DOCKER_CONTAINER = "index_container"
+        REPO_URL = "https://github.com/ArlexBeltran23/jenkinsfile_Repo.git"
+    }
+
+    stages {
+        stage('Checkout') {
+            steps {
+                // Clonar el repositorio que contiene el código
+                git url: "${env.REPO_URL}"
+            }
+        }
+
+        stage('Build Docker Image') {
+            steps {
+                script {
+                    // Construir la imagen Docker
+                    docker.build("${env.DOCKER_IMAGE}")
+                }
+            }
+        }
+
+        stage('Run Docker Container') {
+            steps {
+                script {
+                    // Detener y eliminar cualquier contenedor en ejecución con el mismo nombre
+                    sh """
+                    docker stop ${env.DOCKER_CONTAINER} || true
+                    docker rm ${env.DOCKER_CONTAINER} || true
+                    """
+                    // Iniciar un nuevo contenedor desde la imagen construida
+                    docker.run("-d -p 80:80 --name ${env.DOCKER_CONTAINER} ${env.DOCKER_IMAGE}")
+                }
+            }
+        }
+    }
+
+    post {
+        always {
+            // Limpiar el workspace después de la ejecución del pipeline
+            cleanWs()
+        }
+    }
+}
