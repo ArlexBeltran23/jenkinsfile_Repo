@@ -31,7 +31,8 @@ pipeline {
                     def dockerCmd = "sh -c 'docker stop ${env.DOCKER_CONTAINER} || true && docker rm ${env.DOCKER_CONTAINER} || true'"
                     sh dockerCmd
                     // Iniciar un nuevo contenedor desde la imagen construida
-                    docker.run("-d -p 80:80 --name ${env.DOCKER_CONTAINER} ${env.DOCKER_IMAGE}")
+                    dockerCmd = "sh -c 'docker run -d -p 80:80 --name ${env.DOCKER_CONTAINER} ${env.DOCKER_IMAGE}'"
+                    sh dockerCmd
                 }
             }
         }
