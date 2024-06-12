@@ -27,11 +27,9 @@ pipeline {
         stage('Run Docker Container') {
             steps {
                 script {
-                    // Detener y eliminar cualquier contenedor en ejecución con el mismo nombre
-                    sh """
-                    docker stop ${env.DOCKER_CONTAINER} || true
-                    docker rm ${env.DOCKER_CONTAINER} || true
-                    """
+                    // Permitir que Jenkins ejecute comandos docker
+                    def dockerCmd = "sh -c 'docker stop ${env.DOCKER_CONTAINER} || true && docker rm ${env.DOCKER_CONTAINER} || true'"
+                    sh dockerCmd
                     // Iniciar un nuevo contenedor desde la imagen construida
                     docker.run("-d -p 80:80 --name ${env.DOCKER_CONTAINER} ${env.DOCKER_IMAGE}")
                 }
