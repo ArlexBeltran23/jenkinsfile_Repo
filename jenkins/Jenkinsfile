@@ -3,24 +3,17 @@ pipeline {
 
     environment {
         DOCKER_IMAGE = "index"
-        DOCKER_CONTAINER = "index_container"
-        REPO_URL = "https://github.com/ArlexBeltran23/jenkinsfile_Repo.git"
-        DOCKER_HUB_REPO = "arlexbeltran/index" // Reemplaza con tu cuenta y nombre de repositorio en Docker Hub
+        DOCKER_HUB_REPO = "arlexbeltran/index"
     }
 
     stages {
         stage('Checkout') {
             steps {
-                git url: "${env.REPO_URL}"
-            }pipeline {
-    agent any
+                // Clonar el repositorio que contiene el código
+                git url: "https://github.com/ArlexBeltran23/jenkinsfile_Repo.git"
+            }
+        }
 
-    environment {
-        DOCKER_IMAGE = "index"
-        DOCKER_HUB_REPO = "arlexbeltran/index"
-    }
-
-    stages {
         stage('Build Docker Image') {
             steps {
                 script {
@@ -33,7 +26,7 @@ pipeline {
         stage('Push Docker Image to Docker Hub') {
             steps {
                 script {
-                    // Etiquetar la imagen para Docker Hub
+                    // Etiquetar y subir la imagen a Docker Hub
                     docker.withRegistry('https://index.docker.io/v1/', 'docker_hub_credentials') {
                         docker.image("${env.DOCKER_IMAGE}").push("${env.DOCKER_HUB_REPO}")
                     }
@@ -45,46 +38,6 @@ pipeline {
     post {
         always {
             // Limpiar el workspace después de la ejecución del pipeline
-            cleanWs()
-        }
-    }
-}
-
-        }
-
-        stage('Build Docker Image') {
-            steps {
-                script {
-                    docker.build("${env.DOCKER_IMAGE}")
-                }
-            }
-        }
-
-        stage('Push Docker Image to Docker Hub') {
-            steps {
-                script {
-                    docker.withRegistry('https://index.docker.io/v1/', 'docker_hub_crendetials') {
-                        docker.image("${env.DOCKER_IMAGE}").push("${env.DOCKER_HUB_REPO}")
-                    }
-                }
-            }
-        }
-
-        stage('Run Docker Container') {
-            steps {
-                script {
-                    sh """
-                    docker stop ${env.DOCKER_CONTAINER} || true
-                    docker rm ${env.DOCKER_CONTAINER} || true
-                    """
-                    docker.run("-d -p 80:80 --name ${env.DOCKER_CONTAINER} ${env.DOCKER_IMAGE}")
-                }
-            }
-        }
-    }
-
-    post {
-        always {
             cleanWs()
         }
     }
