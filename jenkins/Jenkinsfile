@@ -12,7 +12,44 @@ pipeline {
         stage('Checkout') {
             steps {
                 git url: "${env.REPO_URL}"
+            }pipeline {
+    agent any
+
+    environment {
+        DOCKER_IMAGE = "index"
+        DOCKER_HUB_REPO = "arlexbeltran/index"
+    }
+
+    stages {
+        stage('Build Docker Image') {
+            steps {
+                script {
+                    // Construir la imagen Docker
+                    docker.build("${env.DOCKER_IMAGE}")
+                }
             }
+        }
+
+        stage('Push Docker Image to Docker Hub') {
+            steps {
+                script {
+                    // Etiquetar la imagen para Docker Hub
+                    docker.withRegistry('https://index.docker.io/v1/', 'docker_hub_credentials') {
+                        docker.image("${env.DOCKER_IMAGE}").push("${env.DOCKER_HUB_REPO}")
+                    }
+                }
+            }
+        }
+    }
+
+    post {
+        always {
+            // Limpiar el workspace después de la ejecución del pipeline
+            cleanWs()
+        }
+    }
+}
+
         }
 
         stage('Build Docker Image') {
